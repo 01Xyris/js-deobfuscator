@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{BC62E89B-1F1B-4C77-9869-5BAD7CE96D56}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>js_deobfuscator</RootNamespace>
-    <AssemblyName>js-deobfuscator</AssemblyName>
+    <RootNamespace>wsh_deobfuscator</RootNamespace>
+    <AssemblyName>wsh-deobfuscator</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
