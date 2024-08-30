@@ -54,37 +54,36 @@ public class PatternFinder
         return _script;
     }
 
-    public string Process(string cleaned)
+public string Process(string cleaned)
+{
+    _script = cleaned;
+    var matches = Regex.Matches(_script, RegexPatterns.PLUS_PATTERN);
+
+    if (matches.Count == 0)
     {
-        _script = cleaned;
+        ConsoleHelper.WriteLine(NO_PATTERN_MSG, ConsoleColor.Yellow);
+        return _script;
+    }
 
-        var match = Regex.Match(_script, RegexPatterns.PLUS_PATTERN);
-
-        if (!match.Success)
-        {
-            ConsoleHelper.WriteLine(NO_PATTERN_MSG, ConsoleColor.Yellow);
-            return _script;
-        }
-
+    foreach (Match match in matches)
+    {
         string foundPat = match.Value.Trim();
         ConsoleHelper.WriteLine($"Found pattern: '{foundPat}'", ConsoleColor.Cyan);
 
         var valMatch = Regex.Match(_script, string.Format(RegexPatterns.VARIABLE_PATTERN, foundPat));
-
         if (!valMatch.Success)
         {
-            ConsoleHelper.WriteLine($"Could not find the value for '{foundPat}'", ConsoleColor.Yellow);
-            return _script;
+            ConsoleHelper.WriteLine($"Could not find the value for '{foundPat}'. Trying next match.", ConsoleColor.Yellow);
+            continue;
         }
 
         string val = valMatch.Groups[1].Value;
-
         var match2 = Regex.Match(_script, RegexPatterns.A_PATTERN);
 
         if (!match2.Success)
         {
             ConsoleHelper.WriteLine(NO_PATTERN_MSG, ConsoleColor.Yellow);
-            return _script;
+            continue;
         }
 
         ConsoleHelper.WriteLine($"Found pattern: '{match2.Value.Trim()}'", ConsoleColor.Cyan);
@@ -101,16 +100,18 @@ public class PatternFinder
         string decodedStr = Encoding.UTF8.GetString(decodedBytes);
         string cleanedStr = new string(decodedStr.Where(c => !char.IsControl(c) && (char.IsLetterOrDigit(c) || char.IsPunctuation(c) || char.IsWhiteSpace(c))).ToArray());
 
-        _script = _script.Replace(splitVal, cleanedStr);
+            ProcessUrls(cleanedStr);
+            _script = _script.Replace(splitVal, cleanedStr);
         _script = Regex.Replace(_script, RegexPatterns.LONG_RANDOM_STRING_PATTERN, "");
-
         _script = Regex.Replace(_script, RegexPatterns.EMPTY_LINES_PATTERN, "", RegexOptions.Multiline);
 
-
-        ProcessUrls(cleanedStr);
-
+        Console.WriteLine("Result after processing:");
         return _script;
     }
+
+    ConsoleHelper.WriteLine("No valid patterns found after trying all matches.", ConsoleColor.Yellow);
+    return _script;
+}
 
     private void ProcessUrls(string cleanedStr)
     {
@@ -118,7 +119,7 @@ public class PatternFinder
         var downloader = new FileDownloader();
 
         ProcessUrl("RunPE/Loader", extractor.ExtractRunPeUrl(), downloader.ProcessRunPE);
-        ProcessUrl("Payload", extractor.ExtractPayloadUrl(), (url, path) => downloader.Download(url, path, "Payload"));
+        ProcessUrl("Payload", extractor.ExtractPayloadUrl(), (url, path) => downloader.Download(url, path));
     }
 
     private void ProcessUrl(string type, string url, Func<string, string, bool> downloadFunc)

