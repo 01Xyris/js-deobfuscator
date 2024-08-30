@@ -28,19 +28,33 @@ public class UrlExtractor
 
     public string ExtractPayloadUrl()
     {
-        Match m = Regex.Match(_content, RegexPatterns.PAYLOAD_URL_PATTERN);
-        if (m.Success)
+        string revUrl = TryExtractUrl(RegexPatterns.PAYLOAD_URL_PATTERN);
+
+        if (revUrl == null)
         {
-            string revUrl = new string(m.Groups[1].Value.Reverse().ToArray());
+            revUrl = TryExtractUrl(RegexPatterns.PAYLOAD_URL_PATTERN3008);
+        }
+
+        if (revUrl != null)
+        {
+      
             return revUrl.TrimStart('&');
         }
-        m = Regex.Match(_content, RegexPatterns.PAYLOAD_URL_PATTERN3008);
-        if (m.Success)
-        {
-          
-            string revUrl = new string(m.Groups[1].Value.Reverse().ToArray());
-            return revUrl.TrimStart('&');
-        }
-        return string.Empty;
+
+        ConsoleHelper.WriteLine("No valid URL found in content.", System.ConsoleColor.Red);
+        return string.Empty; 
     }
+
+    private string TryExtractUrl(string pattern)
+    {
+        Match match = Regex.Match(_content, pattern);
+        if (match.Success)
+        {
+            string reversedUrl = new string(match.Value.Reverse().ToArray());
+            return reversedUrl;
+        }
+
+        return null;
+    }
+
 }

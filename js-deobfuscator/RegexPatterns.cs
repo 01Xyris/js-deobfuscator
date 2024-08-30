@@ -11,10 +11,10 @@
     public const string EMPTY_LINES_PATTERN = @"^\s*$\n|\r";
     public const string URL_PAIRS_PATTERN = @"(\w+)\s+([^;]+)";
     public const string PAYLOAD_URL_PATTERN = @"(&[^']+txt\.[^/]+/\d+/\d+/stnemhcatta/moc\.ppadrocsid\.ndc//:sptth)";
+    public const string PAYLOAD_URL_PATTERN3008 = @"txt\.[a-zA-Z0-9.-]+(?:/[a-zA-Z0-9.-]*)*//:sptth";
 
-    public const string PAYLOAD_URL_PATTERN3008 = @"(txt\.[^/]+/[^/]+/moc\.[^/]+//:sptth)";
-    
-    
+
+
     public const string VBS_PLUS_PATTERN = @"(?<=\& )[a-zA-Z]+(?= \&)";
     public const string VBS_VARIABLE_PATTERN = @"{0} = ""(.+?)""";
     public const string VBS_JOIN = @"(?<=, )(\w+)(?=, """")";
